@@ -22,7 +22,8 @@ import 'package:miru_app/utils/external_player.dart';
 import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/views/widgets/messenger.dart';
-
+import 'package:file_picker/file_picker.dart';
+import 'package:miru_app/controllers/download_manager_controller.dart';
 class DetailPageController extends GetxController {
   DetailPageController({
     required this.package,
@@ -423,6 +424,83 @@ class DetailPageController extends GetxController {
         }),
       ),
     );
+  }
+
+  // --- Download Episode Method (Integrated with DownloadManagerController) ---
+  Future<void> downloadEpisode(ExtensionEpisode episode) async {
+    if (runtime.value == null) {
+      showPlatformSnackbar(
+        context: currentContext,
+        content: FlutterI18n.translate(
+          currentContext,
+          'common.extension-missing',
+          translationParams: {
+            'package': package,
+          },
+        ),
+        severity: fluent.InfoBarSeverity.error,
+      );
+      return;
+    }
+
+    try {
+      showPlatformSnackbar(
+        context: currentContext,
+        content: 'Fetching video stream link...',
+        severity: fluent.InfoBarSeverity.info,
+      );
+
+      final watchData = await runtime.value!.watch(episode.url) as ExtensionBangumiWatch;
+      final videoUrl = watchData.url;
+
+      if (videoUrl.isEmpty) {
+        showPlatformSnackbar(
+          context: currentContext,
+          content: 'Failed to retrieve video stream URL.',
+          severity: fluent.InfoBarSeverity.error,
+        );
+        return;
+      }
+
+      final String rawAnimeTitle = detail?.title ?? 'Anime';
+      final String safeAnimeTitle = rawAnimeTitle.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+      
+      final String rawEpisodeName = episode.name.isNotEmpty ? episode.name : 'Episode';
+      final String safeEpisodeName = rawEpisodeName.replaceAll(RegExp(r'[\\/:*?"<>|]'), '_');
+
+      String? outputPath = await FilePicker.platform.saveFile(
+        dialogTitle: 'Save Episode As',
+        fileName: '$safeAnimeTitle - $safeEpisodeName.mp4',
+      );
+
+      if (outputPath == null) {
+        return;
+      }
+
+      // Get the global DownloadManagerController instance
+      final downloadManager = Get.find<DownloadManagerController>();
+
+      // Enqueue the download task with required headers to prevent server block
+      downloadManager.enqueueDownload(
+        animeTitle: rawAnimeTitle,
+        episodeName: rawEpisodeName,
+        url: videoUrl,
+        savePath: outputPath,
+        headers: watchData.headers ?? detail?.headers,
+      );
+
+      showPlatformSnackbar(
+        context: currentContext,
+        content: 'Download added to manager queue.',
+        severity: fluent.InfoBarSeverity.success,
+      );
+    } catch (e) {
+      showPlatformSnackbar(
+        context: currentContext,
+        content: 'Download error: ${e.toString().split('\n')[0]}',
+        severity: fluent.InfoBarSeverity.error,
+      );
+    }
   }
 
   @override

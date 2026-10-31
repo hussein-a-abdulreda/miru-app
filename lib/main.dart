@@ -20,6 +20,7 @@ import 'package:miru_app/utils/miru_storage.dart';
 import 'package:miru_app/utils/application.dart';
 import 'package:miru_app/views/widgets/platform_widget.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:miru_app/controllers/download_manager_controller.dart';
 
 void main(List<String> args) async {
   runZonedGuarded(() async {
@@ -53,6 +54,8 @@ void main(List<String> args) async {
     await MiruRequest.ensureInitialized();
     ExtensionUtils.ensureInitialized();
     MediaKit.ensureInitialized();
+    // Initialize Download Manager Controller globally
+    Get.put(DownloadManagerController(), permanent: true);
 
     if (!Platform.isAndroid) {
       await windowManager.ensureInitialized();

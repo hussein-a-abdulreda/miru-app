@@ -18,6 +18,7 @@ import 'package:miru_app/views/pages/search/search_page.dart';
 import 'package:miru_app/views/pages/settings/settings_page.dart';
 import 'package:miru_app/views/pages/tracking/anilist_more_page.dart';
 import 'package:miru_app/views/pages/tracking/anilist_tracking_page.dart';
+import 'package:miru_app/views/pages/downloads_page.dart';
 
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -72,6 +73,10 @@ final router = GoRouter(
         GoRoute(
           path: '/extension',
           builder: (context, state) => _animation(const ExtensionPage()),
+        ),
+        GoRoute(
+          path: '/downloads',
+          builder: (context, state) => _animation(const DownloadsPage()),
         ),
         GoRoute(
           path: '/extension_settings',

@@ -13,6 +13,7 @@ import 'package:miru_app/utils/i18n.dart';
 import 'package:miru_app/utils/layout.dart';
 import 'package:miru_app/utils/miru_storage.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:miru_app/views/pages/downloads_page.dart';
 
 class DesktopMainPage extends StatefulWidget {
   const DesktopMainPage({
@@ -148,6 +149,14 @@ class _DesktopMainPageState extends State<DesktopMainPage> with WindowListener {
             body: const ExtensionPage(),
             onTap: () {
               router.go('/extension');
+            },
+          ),
+          fluent.PaneItem(
+            icon: const Icon(fluent.FluentIcons.download),
+            title: const Text('Downloads'),
+            body: const DownloadsPage(),
+            onTap: () {
+              router.go('/downloads');
             },
           ),
         ],

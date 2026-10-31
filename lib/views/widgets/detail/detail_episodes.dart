@@ -28,6 +28,64 @@ class _DetailEpisodesState extends State<DetailEpisodes> {
   late List<ExtensionEpisodeGroup> episodes = [];
   late String listMode = MiruStorage.getSetting(SettingKey.listMode);
   bool isRevered = false;
+  void _showDownloadMenu(BuildContext context, Offset position, dynamic episode) async {
+    await showDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.transparent,
+      builder: (context) {
+        final isDark = fluent.FluentTheme.of(context).brightness == Brightness.dark;
+        return Stack(
+          children: [
+            Positioned(
+              left: position.dx,
+              top: position.dy,
+              child: fluent.Acrylic(
+                child: Container(
+                  width: 160,
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF202020) : const Color(0xFFF3F3F3),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      width: 1,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        fluent.Button(
+                          style: fluent.ButtonStyle(
+                            backgroundColor: fluent.ButtonState.all(Colors.transparent),
+                            padding: fluent.ButtonState.all(
+                              const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            ),
+                          ),
+                          child: Row(
+                            children: const [
+                              Icon(fluent.FluentIcons.download, size: 16),
+                              SizedBox(width: 10),
+                              Text('Download'),
+                            ],
+                          ),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            c.downloadEpisode(episode);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
   Widget _buildAndroidEpisodes(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,18 +259,24 @@ class _DetailEpisodesState extends State<DetailEpisodes> {
                 childAspectRatio: 5,
               ),
               itemBuilder: (context, index) {
-                return fluent.Button(
-                  child: Center(
-                      child: Text(
-                          episodes[c.selectEpGroup.value].urls[index].name)),
-                  onPressed: () async {
-                    c.goWatch(
-                      context,
-                      episodes[c.selectEpGroup.value].urls,
-                      index,
-                      c.selectEpGroup.value,
-                    );
+                final episode = episodes[c.selectEpGroup.value].urls[index];
+                return GestureDetector(
+                  onSecondaryTapUp: (details) {
+                    _showDownloadMenu(context, details.globalPosition, episode);
                   },
+                  child: fluent.Button(
+                    child: Center(
+                      child: Text(episode.name),
+                    ),
+                    onPressed: () async {
+                      c.goWatch(
+                        context,
+                        episodes[c.selectEpGroup.value].urls,
+                        index,
+                        c.selectEpGroup.value,
+                      );
+                    },
+                  ),
                 );
               },
             );
@@ -229,16 +293,22 @@ class _DetailEpisodesState extends State<DetailEpisodes> {
         itemCount:
             episodes.isEmpty ? 0 : episodes[c.selectEpGroup.value].urls.length,
         itemBuilder: (context, index) {
-          return fluent.ListTile(
-            title: Text(episodes[c.selectEpGroup.value].urls[index].name),
-            onPressed: () {
-              c.goWatch(
-                context,
-                episodes[c.selectEpGroup.value].urls,
-                index,
-                c.selectEpGroup.value,
-              );
+          final episode = episodes[c.selectEpGroup.value].urls[index];
+          return GestureDetector(
+            onSecondaryTapUp: (details) {
+              _showDownloadMenu(context, details.globalPosition, episode);
             },
+            child: fluent.ListTile(
+              title: Text(episode.name),
+              onPressed: () {
+                c.goWatch(
+                  context,
+                  episodes[c.selectEpGroup.value].urls,
+                  index,
+                  c.selectEpGroup.value,
+                );
+              },
+            ),
           );
         },
       ),
